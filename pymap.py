@@ -10,8 +10,8 @@ if len(sys.argv) < 4:
 
 start = timeit.default_timer()
 ip = sys.argv[1]
+# in case the argument given is a URI
 if re.search('[a-zA-Z]', ip) is not None:
-    # in case the argument given is a URI
     ip = socket.gethostbyname(ip)
 
 startPort = int(sys.argv[2])
@@ -22,6 +22,7 @@ numThreads = int(sys.argv[4])
 def tryPort(portValue):
     try:
         s = socket.socket()
+        # connect socket to ip and port
         s.connect((ip, portValue))
         if portValue == 21:
             print("[+]Port", portValue, "open | FTP")
@@ -61,10 +62,12 @@ def tryPort(portValue):
         pass
 
 
-stop = timeit.default_timer()
+print("Scanning host", ip + "...")
 threads = min(numThreads, endPort-startPort)
 array = range(startPort, endPort)
+# distribute the ports between all the available threads
 with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
     executor.map(tryPort, array)
 
+stop = timeit.default_timer()
 print('Time: ', stop - start, 'seconds')
